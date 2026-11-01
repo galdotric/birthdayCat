@@ -1,94 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="styles.css">
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yusra's Blob Cat</title>
+    <title>Birthday Cat</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="wrapper">
-        <img src="cat.png" alt="Blob Cat" class="centered-cat">
-        <button id="btn">Sing</button>
-        <audio id="operaAudio" src="her_opera.wav" preload="auto" hidden></audio>
-        <div class="happiness-meter">
-            <div class="happiness-fill"></div>
+    <canvas id="confetti" aria-hidden="true"></canvas>
+    <div id="balloons" aria-hidden="true"></div>
+
+    <main class="stage">
+        <h1 id="title">Happy Birthday!</h1>
+
+        <label class="name-field">
+            <span>Who's the birthday for?</span>
+            <input id="name" type="text" maxlength="24" placeholder="Type a name" autocomplete="off">
+        </label>
+
+        <div class="cat-area">
+            <div id="cake" class="cake" hidden>
+                <button id="candles" class="candles" aria-label="Blow out the candles">
+                    <span class="candle"><span class="flame"></span></span>
+                    <span class="candle"><span class="flame"></span></span>
+                    <span class="candle"><span class="flame"></span></span>
+                </button>
+                <div class="cake-top"></div>
+                <div class="cake-body"></div>
+                <div class="cake-plate"></div>
+            </div>
+
+            <button id="cat" class="cat" aria-label="Pet the cat">
+                <svg viewBox="0 0 300 300" role="img" aria-hidden="true">
+                    <!-- tail (behind the body) -->
+                    <path class="tail" d="M228 220 C 285 215, 290 150, 262 130"
+                          fill="none" stroke="var(--cat-dark)" stroke-width="18" stroke-linecap="round"/>
+
+                    <!-- ears -->
+                    <path d="M78 118 L 92 52 L 136 96 Z" fill="var(--cat)"/>
+                    <path d="M222 118 L 208 52 L 164 96 Z" fill="var(--cat)"/>
+                    <path d="M92 104 L 99 70 L 121 92 Z" fill="var(--ear)"/>
+                    <path d="M208 104 L 201 70 L 179 92 Z" fill="var(--ear)"/>
+
+                    <!-- body -->
+                    <ellipse cx="150" cy="185" rx="105" ry="92" fill="var(--cat)"/>
+                    <ellipse cx="150" cy="215" rx="62" ry="50" fill="var(--belly)"/>
+
+                    <!-- party hat -->
+                    <g class="hat">
+                        <path d="M118 78 L 150 8 L 182 78 Z" fill="var(--hat)"/>
+                        <path d="M128 56 L 172 56 M 138 34 L 162 34" stroke="var(--hat-stripe)" stroke-width="7"/>
+                        <circle cx="150" cy="8" r="10" fill="var(--hat-stripe)"/>
+                    </g>
+
+                    <!-- cheeks (blush grows with happiness) -->
+                    <ellipse id="blush-l" class="blush" cx="92" cy="172" rx="18" ry="10"/>
+                    <ellipse id="blush-r" class="blush" cx="208" cy="172" rx="18" ry="10"/>
+
+                    <!-- eyes -->
+                    <g class="eyes">
+                        <ellipse cx="112" cy="145" rx="11" ry="15" fill="var(--ink)"/>
+                        <ellipse cx="188" cy="145" rx="11" ry="15" fill="var(--ink)"/>
+                        <circle cx="116" cy="139" r="4" fill="#fff"/>
+                        <circle cx="192" cy="139" r="4" fill="#fff"/>
+                    </g>
+                    <g class="eyes-happy">
+                        <path d="M98 148 Q 112 130 126 148" fill="none" stroke="var(--ink)" stroke-width="6" stroke-linecap="round"/>
+                        <path d="M174 148 Q 188 130 202 148" fill="none" stroke="var(--ink)" stroke-width="6" stroke-linecap="round"/>
+                    </g>
+
+                    <!-- nose and mouth -->
+                    <path d="M144 162 L 156 162 L 150 169 Z" fill="var(--ear)"/>
+                    <path class="mouth-closed" d="M134 174 Q 142 184 150 172 Q 158 184 166 174"
+                          fill="none" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/>
+                    <ellipse class="mouth-open" cx="150" cy="182" rx="11" ry="13" fill="var(--mouth)"/>
+
+                    <!-- whiskers -->
+                    <g stroke="var(--ink)" stroke-width="3" stroke-linecap="round" opacity="0.55">
+                        <path d="M72 160 L 34 152 M 72 170 L 32 172 M 74 180 L 38 192"/>
+                        <path d="M228 160 L 266 152 M 228 170 L 268 172 M 226 180 L 262 192"/>
+                    </g>
+
+                    <!-- paws -->
+                    <ellipse cx="110" cy="268" rx="26" ry="16" fill="var(--cat-dark)"/>
+                    <ellipse cx="190" cy="268" rx="26" ry="16" fill="var(--cat-dark)"/>
+                </svg>
+            </button>
         </div>
-        <div class="happiness-label">Happiness Meter</div>
-    </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const cat = document.querySelector('.centered-cat');
-            const btn = document.getElementById('btn');
-            const happinessFill = document.querySelector('.happiness-fill');
-            const audio = document.getElementById('operaAudio');
-            let currentHappiness = 0;
+        <button id="sing" class="sing-btn">Sing! <span aria-hidden="true">🎵</span></button>
 
-            btn.addEventListener('click', () => {
-                // Reset and play audio immediately
-                audio.currentTime = 0; // Start from beginning
-                audio.play().catch(error => {
-                    console.log("Audio play failed:", error);
-                });
+        <div class="meter" role="progressbar" aria-label="Happiness" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div id="meter-fill" class="meter-fill"></div>
+        </div>
+        <p id="mood" class="mood">Grumpy — sing to cheer them up</p>
+        <p class="hint">Tip: click the cat to pet it</p>
+    </main>
 
-                // Calculate new happiness level (increase by 25%, max 100%)
-                const targetHappiness = Math.min(currentHappiness + 25, 100);
-                
-                // Update happiness meter width
-                happinessFill.style.width = `${targetHappiness}%`;
-                
-                // Update current happiness
-                currentHappiness = targetHappiness;
-
-                // Disable button during animation
-                btn.disabled = true;
-                btn.style.opacity = '0.5';
-                btn.style.cursor = 'not-allowed';
-
-                // Re-enable button after 6 seconds
-                setTimeout(() => {
-                    btn.disabled = false;
-                    btn.style.opacity = '1';
-                    btn.style.cursor = 'pointer';
-                }, 6000);
-
-                // Trigger pop animation
-                cat.classList.add('pop-animation');
-                cat.addEventListener('animationend', (event) => {
-                    if (event.animationName === 'pop') {
-                        cat.classList.remove('pop-animation');
-                    }
-                }, { once: true });
-
-                // Trigger dance animation
-                cat.classList.add('dance-animation');
-                cat.addEventListener('animationend', (event) => {
-                    if (event.animationName === 'dance') {
-                        cat.classList.remove('dance-animation');
-                    }
-                }, { once: true });
-
-                // Generate confetti
-                for (let i = 0; i < 30; i++) {
-                    const confetti = document.createElement('div');
-                    confetti.classList.add('confetti');
-                    confetti.style.backgroundColor = getRandomColor();
-                    confetti.style.left = (window.innerWidth / 2 + (Math.random() * 100 - 50)) + 'px';
-                    confetti.style.top = (window.innerHeight / 2 - 100) + 'px';
-                    confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
-                    document.body.appendChild(confetti);
-
-                    setTimeout(() => confetti.remove(), 1000);
-                }
-            });
-
-            function getRandomColor() {
-                const colors = ['red', 'yellow', 'blue', 'green', 'pink', 'purple', 'orange'];
-                return colors[Math.floor(Math.random() * colors.length)];
-            }
-        });
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
